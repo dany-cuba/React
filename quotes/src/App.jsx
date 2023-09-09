@@ -1,45 +1,22 @@
-import { useState, useEffect } from "react";
-import { getRandomQuote } from "./services/quote";
+import { useState } from "react";
+import { useLoadQuote } from "./hooks/useLoadQuote";
 import { RaceBy } from "@uiball/loaders";
 import { motion } from "framer-motion";
 
 export default function App() {
-  const [quote, setQuote] = useState();
-  const [isLoading, setIsLoading] = useState(true);
-  const [connected, setConnected] = useState(true);
+  const [restart, setRestart] = useState(false);
+  const { quote, isLoading, connected } = useLoadQuote(restart);
 
-  useEffect(() => {
-    getRandomQuote()
-      .then(setQuote)
-      .catch((e) => {
-        console.log(e);
-        setQuote(undefined);
-        if (e.code === "ERR_NETWORK") {
-          setConnected(false);
-        }
-      })
-      .finally(setIsLoading);
-  }, []);
-
-  async function renewQuote() {
-    setIsLoading(true);
-
-    try {
-      const newQuote = await getRandomQuote();
-      setQuote(newQuote);
-      setIsLoading(false);
-      setConnected(true);
-    } catch (e) {
-      console.log(e);
-      setQuote(undefined);
-      setIsLoading(false);
-      setConnected(false);
-    }
+  function handleClick() {
+    setRestart(!restart);
   }
 
   // render
   return (
-    <main className="w-auto h-screen p-6 flex flex-col place-items-center justify-center bg-gray-800 text-white">
+    <main
+      id="background"
+      className="w-full min-h-screen max-h-full p-6 flex flex-col place-items-center justify-center bg-gray-800 text-white"
+    >
       {connected ? (
         <motion.div
           id="connection"
@@ -49,7 +26,6 @@ export default function App() {
         >
           No tiene conexion a internet
         </motion.div>
-        
       ) : (
         <motion.div
           id="connection"
@@ -85,7 +61,7 @@ export default function App() {
         >
           <button className="bg-like w-10 h-10 " id="like-button"></button>
           <button
-            onClick={renewQuote}
+            onClick={handleClick}
             className="bg-refresh w-10 h-10"
             id="refresh-button"
           ></button>
